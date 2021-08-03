@@ -1,0 +1,430 @@
+<template>
+  <v-row>
+    <v-col>
+      <v-card class="bookTableCover">
+        <v-data-table
+          :headers="bookHeaders"
+          :items="books"
+          sort-by="isSold"
+          sort-desc
+          class="elevation-2 bookTable"
+          mobile-breakpoint="0"
+          :search="searchBook"
+        >
+          <template v-slot:item.isSold="{ item }">
+            <v-chip :color="getColor(item.isSold)" dark>
+              {{ item.isSold }}
+            </v-chip>
+          </template>
+          <template v-slot:top>
+            <v-toolbar flat>
+              <v-container>
+                <v-row>
+                  <v-col cols="5">
+                    <v-toolbar-title>재고 목록</v-toolbar-title>
+                  </v-col>
+                  <v-col>
+                    <v-text-field
+                      v-model="searchBook"
+                      append-icon="mdi-magnify"
+                      label="Search"
+                      single-line
+                      hide-details
+                    >
+                    </v-text-field>
+                  </v-col>
+                </v-row>
+              </v-container>
+
+              <v-dialog persistent v-model="dialogBook" max-width="500px">
+                <!-- 예약 버튼 -->
+                <template v-slot:activator="{ on, attrs }">
+                  <v-btn
+                    color="primary"
+                    dark
+                    class="mb-2"
+                    v-bind="attrs"
+                    v-on="on"
+                  >
+                    추가하기
+                  </v-btn>
+                </template>
+
+                <!-- Dialog -->
+                <v-card>
+                  <v-card-title>
+                    <span class="headline">{{ formTitle }}</span>
+                  </v-card-title>
+
+                  <!-- 신규 예약시 작성 요소 -->
+                  <!-- 날짜, 시간, 이름, 학번, 비밀번호 -->
+                  <v-card-text>
+                    <v-container>
+                      <v-row>
+                        <v-col cols="12" sm="6" md="6">
+                          <v-text-field
+                            v-model="editedBookItem.name"
+                            label="판매자 이름"
+                          ></v-text-field>
+                        </v-col>
+
+                        <v-col cols="12" sm="6" md="6">
+                          <v-text-field
+                            v-model="editedBookItem.studentId"
+                            label="판매자 학번"
+                          ></v-text-field>
+                        </v-col>
+
+                        <v-col cols="12" sm="6" md="6">
+                          <v-text-field
+                            v-model="editedBookItem.price"
+                            label="판매가격"
+                          ></v-text-field>
+                        </v-col>
+
+                        <v-col cols="12" sm="6" md="6">
+                          <v-select
+                            :items="selectState"
+                            label="책상태"
+                            v-model="editedBookItem.state"
+                          >
+                          </v-select>
+                        </v-col>
+
+                        <v-col cols="12" sm="6" md="6">
+                          <v-select
+                            v-if="formTitle === '추가'"
+                            disabled
+                            :items="selectIsSold"
+                            item-value="판매 중"
+                            item
+                            label="판매 중"
+                            v-model="editedBookItem.isSold"
+                          >
+                          </v-select>
+                          <v-select
+                            v-else
+                            :items="selectIsSold"
+                            label="판매여부"
+                            v-model="editedBookItem.isSold"
+                          >
+                          </v-select>
+                        </v-col>
+                      </v-row>
+                    </v-container>
+                  </v-card-text>
+                  <v-card-actions>
+                    <v-spacer></v-spacer>
+                    <v-btn color="blue darken-1" text @click="closeBook">
+                      취소
+                    </v-btn>
+                    <v-btn color="blue darken-1" text @click="saveBook">
+                      저장
+                    </v-btn>
+                  </v-card-actions>
+                </v-card>
+              </v-dialog>
+              <!-- 삭제(본인만 가능하도록) -->
+              <!-- 삭제시 학번, 비밀번호 요구. 선택된 예약과 학번, 비밀번호가 맞으면 예약 삭제 -->
+              <v-dialog persistent v-model="dialogBookDelete" max-width="500px">
+                <v-card>
+                  <v-container>
+                    <v-row>
+                      <v-col cols="6"></v-col>
+                      <v-col cols="6"></v-col>
+                    </v-row>
+                  </v-container>
+                  <v-card-title class="headline"
+                    >재고를 삭제하시겠습니까</v-card-title
+                  >
+                  <v-card-actions>
+                    <v-spacer></v-spacer>
+                    <v-btn color="blue darken-1" text @click="closeBookDelete"
+                      >아니오</v-btn
+                    >
+                    <v-btn
+                      color="blue darken-1"
+                      text
+                      @click="deleteBookItemConfirm"
+                      >네</v-btn
+                    >
+                    <v-spacer></v-spacer>
+                  </v-card-actions>
+                </v-card>
+              </v-dialog>
+            </v-toolbar>
+          </template>
+          <template v-slot:item.actions="{ item }">
+            <v-icon small class="mr-2" @click="editBookItem(item)">
+              mdi-pencil
+            </v-icon>
+            <v-icon small @click="deleteBookItem(item)"> mdi-delete </v-icon>
+          </template>
+          <template v-slot:no-data>
+            <div v-if="totalBookNum === null">
+              <v-progress-linear indeterminate color="cyan"></v-progress-linear>
+            </div>
+            <div v-else>재고 없음</div>
+          </template>
+        </v-data-table>
+      </v-card>
+    </v-col>
+    <Snackbar :snackbar="snackbar" :text="text" />
+  </v-row>
+</template>
+
+<script>
+import api from "@/key";
+import Snackbar from "../ShowDetail/Snackbar.vue";
+export default {
+  components: {
+    Snackbar,
+  },
+  props: {
+    bookId: String,
+  },
+  created() {
+    this.getBookList();
+  },
+  computed: {
+    formTitle() {
+      return this.editedBookIndex === -1 ? "추가" : "수정";
+    },
+  },
+  watch: {
+    // 재고
+    dialogBook(val) {
+      val || this.closeBook();
+    },
+  },
+  data() {
+    return {
+      //스낵바
+      snackbar: false,
+      text: "",
+      selectState: ["A", "B", "C"],
+      selectIsSold: ["판매 중", "판매 완료"],
+      //총 재고 수
+      totalBookNum: null,
+      //   책목록 배열
+      books: [],
+      //책
+      editedBookIndex: -1,
+      editedBookItem: {
+        name: "",
+        studentId: "",
+        price: "",
+        state: "",
+        isSold: "",
+      },
+
+      dialogBook: false,
+      dialogBookDelete: false,
+      searchBook: "",
+      bookHeaders: [
+        {
+          text: "이름",
+          align: "start",
+          sortable: true,
+          value: "name",
+        },
+        { text: "학번", value: "studentId" },
+        { text: "판매가격(원)", value: "price" },
+        { text: "책상태", value: "state" },
+        { text: "판매여부", value: "isSold" },
+        { text: "Actions", value: "actions", sortable: false },
+      ],
+    };
+  },
+  methods: {
+    //재고 목록 조회
+    //초기화 함수(재고, 예약)
+    //현재 등록되어 있는 책의 수(totalUserNum), 책 정보를 가져와서 재고 테이블에 초기화.
+    async getBookList() {
+      //상위 컴포넌트로부터 props를 받던 get방식으로 받던 책의 id값을 받아와서 해당 api에 던져줘야 함.
+      await this.axios
+        .get(`${api.url}/books/${this.bookId}/stocks`)
+        .then((res) => {
+          this.curBookNum = 0;
+          res.data.map((value) => {
+            if (!value.isSold) {
+              value.isSold = "판매 중";
+              this.curBookNum++;
+            } else {
+              value.isSold = "판매 완료";
+            }
+          });
+          this.totalBookNum = res.data.length;
+          this.books = res.data;
+        })
+        .catch((err) => {
+          this.snackbarControll("재고 목록 조회 실패");
+          console.log(err);
+        });
+    },
+    //스낵바(알림)
+    snackbarControll(inputText) {
+      this.snackbar = true;
+      this.text = inputText;
+    },
+    //재고 추가
+    addBooksList(item) {
+      let body = {
+        name: item.name,
+        studentId: item.studentId,
+        price: item.price,
+        state: item.state,
+        isSold: item.isSold,
+      };
+
+      if (body.isSold === "판매 완료") {
+        body.isSold = true;
+      } else {
+        body.isSold = false;
+      }
+
+      this.axios
+        .post(`${api.url}/admin/books/${this.bookId}/Stocks`, body)
+        .then(() => {
+          this.getBookList();
+          this.snackbarControll("재고를 추가하였습니다.");
+        })
+
+        .catch((err) => {
+          this.snackbarControll("재고 추가 실패");
+          this.getBookList();
+          console.log(err);
+        });
+    },
+    // 상태별 색 부여
+    getColor(item) {
+      if (item === "판매 완료" || item === "거래 완료" || item === "취소") {
+        return "red";
+      } else return "green";
+    },
+    //재고 기능 동작 함수
+    editBookItem(item) {
+      this.editedBookIndex = this.books.indexOf(item);
+      this.editedBookItem = Object.assign({}, item);
+      this.dialogBook = true;
+    },
+
+    //삭제 아이콘을 누르자 마자 수행
+    deleteBookItem(item) {
+      // 해당 재고 아이디값 설정
+      this.delBookId = item.id;
+
+      this.editedBookIndex = this.books.indexOf(item);
+      this.editedBookItem = Object.assign({}, item);
+      this.dialogBookDelete = true;
+    },
+
+    //삭제 확인을 누르면 수행
+    deleteBookItemConfirm() {
+      //백엔드 삭제 요청
+      this.delBooks();
+
+      this.books.splice(this.editedBookIndex, 1);
+      this.closeBookDelete();
+    },
+
+    //dialog 닫히면 수행
+    closeBook() {
+      // dialog 닫히면 초기화
+      (this.delBookId = ""), (this.dialogBook = false);
+      this.$nextTick(() => {
+        this.editedBookItem = Object.assign({}, this.defaultBookItem);
+        this.editedBookIndex = -1;
+      });
+    },
+
+    //삭제 확인을 누르면 deleteItemConfirm 이후 수행
+    closeBookDelete() {
+      this.dialogBookDelete = false;
+      this.$nextTick(() => {
+        this.editedBookItem = Object.assign({}, this.defaultBookItem);
+        this.editedBookIndex = -1;
+      });
+    },
+
+    //신규 데이터 생성, 기존 데이터 변경 시 save 를 누르면 수행
+    saveBook() {
+      //수정하는경우
+      if (this.editedBookIndex > -1) {
+        Object.assign(this.books[this.editedBookIndex], this.editedBookItem);
+
+        this.modiBooksList(this.books[this.editedBookIndex]);
+      }
+      //추가하는 경우
+      else {
+        this.books.push(this.editedBookItem);
+
+        //재고추가 post
+        const curIndex = this.books.indexOf(this.editedBookItem);
+        this.addBooksList(this.books[curIndex]);
+      }
+      this.closeBook();
+    },
+
+    //재고 수정
+    modiBooksList(item) {
+      let body = {
+        name: item.name,
+        studentId: item.studentId,
+        price: item.price,
+        state: item.state,
+        isSold: item.isSold,
+      };
+
+      if (body.isSold === "판매 완료") {
+        body.isSold = true;
+      } else {
+        body.isSold = false;
+      }
+      this.axios
+        .put(`${api.url}/admin/stocks/${item.id}`, body)
+        .then(() => {
+          // this.snackbar = true;
+          this.getBookList();
+          this.snackbarControll("재고를 수정하였습니다.");
+        })
+        .catch((err) => {
+          this.snackbarControll("재고 수정 실패");
+          this.getBookList();
+          console.log(err);
+        });
+    },
+
+    //재고 삭제
+    delBooks() {
+      this.axios
+        .delete(
+          `${api.url}/admin/books/${this.bookId}/stocks/${this.delBookId}`
+        )
+        .then(() => {
+          this.getBookList();
+          this.snackbarControll("재고를 삭제하였습니다.");
+        })
+        .catch((err) => {
+          this.snackbarControll("재고 삭제 실패");
+          this.getBookList();
+          console.log(err);
+        });
+    },
+  },
+};
+</script>
+
+<style>
+.bookTableCover {
+  overflow-x: scroll;
+  white-space: nowrap;
+  min-width: 200px;
+}
+
+.bookTable {
+  display: inline-block;
+  width: initial;
+  min-width: 100%;
+}
+</style>
