@@ -93,38 +93,6 @@ export default {
 
       //   예약자 목록 배열
       users: [],
-
-      //책
-      editedBookIndex: -1,
-      editedBookItem: {
-        name: "",
-        studentId: "",
-        price: "",
-        state: "",
-        isSold: "",
-      },
-      defaultBookItem: {
-        name: "",
-        studentId: "",
-        price: "",
-        state: "",
-        isSold: "",
-      },
-
-      //사용자
-      editedUserIndex: -1,
-      editedUserItem: {
-        name: "",
-        studentId: "",
-        day: "",
-        time: "",
-      },
-      defaultUserItem: {
-        name: "",
-        studentId: "",
-        day: "",
-        time: "",
-      },
     };
   },
 
