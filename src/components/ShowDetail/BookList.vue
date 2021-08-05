@@ -256,12 +256,24 @@ export default {
           });
           this.totalBookNum = res.data.length;
           this.books = res.data;
+
+          //상위 컴포넌트로 전달할 데이터
+          const Bookobj = {
+            totalBookNum: this.totalBookNum,
+            curBookNum: this.curBookNum,
+          };
+          this.setBookData(Bookobj);
         })
         .catch((err) => {
           this.snackbarControll("재고 목록 조회 실패");
           console.log(err);
         });
     },
+
+    setBookData(obj) {
+      this.$emit("getBookData", obj);
+    },
+
     //스낵바(알림)
     snackbarControll(inputText) {
       this.snackbar = true;

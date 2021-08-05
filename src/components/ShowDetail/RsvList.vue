@@ -214,11 +214,7 @@ export default {
   props: {
     bookId: String,
   },
-  computed: {
-    UserNum() {
-      return this.totalUserNum - this.cancelUserNum;
-    },
-  },
+  computed: {},
   watch: {
     // 예약
     dialogModiUser(val) {
@@ -249,6 +245,12 @@ export default {
       this.isRefresh = true;
       this.getUserList();
     },
+
+    //상위 컴포넌트로 데이터 전달
+    setRsvData(obj) {
+      this.$emit("getRsvData", obj);
+    },
+
     //현재 예약자 수(curUserNum), 예약자 총 명단을 가져와서 예약자 명단 테이블에 초기화.
     async getUserList() {
       await this.axios
@@ -287,6 +289,14 @@ export default {
             }
           });
           this.users = res.data;
+
+          //상위 컴포넌트로 전달할 데이터
+          const Rsvobj = {
+            totalUserNum: this.totalUserNum,
+            cancelUserNum: this.cancelUserNum,
+            curUserNum: this.curUserNum,
+          };
+          this.setRsvData(Rsvobj);
           if (this.isRefresh) {
             this.snackbarControll("예약 목록 새로고침 완료");
             this.isRefresh = !this.isRefresh;
