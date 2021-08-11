@@ -123,7 +123,7 @@
 </template>
 
 <script>
-import api from "@/key";
+import { getBooksList, deleteBook, addNewBooks, modifyBook } from "../../api/api";
 
 export default {
   data: () => ({
@@ -136,21 +136,11 @@ export default {
     search: "",
     dataLength: null,
     headers: [
-      {
-        text: "title",
-        align: "center",
-        sortable: true,
-        value: "title",
-      },
+      { text: "title", align: "center", sortable: true, value: "title"},
       { text: "publisher", value: "publisher", align: "center" },
       { text: "author", value: "author", align: "center" },
       { text: "stocks", value: "stockCount", sortable: false, align: "center" },
-      {
-        text: "reservations",
-        value: "reservationCount",
-        sortable: false,
-        align: "center",
-      },
+      { text: "reservations", value: "reservationCount", sortable: false, align: "center"},
       { text: "Actions", value: "actions", sortable: false, align: "center" },
     ],
     data: [],
@@ -168,7 +158,6 @@ export default {
       stocks: "",
     },
   }),
-
   computed: {
     formTitle() {
       return this.editedIndex === -1 ? "New Book" : "Edit Book";
@@ -204,8 +193,7 @@ export default {
     },
 
     initialize() {
-      this.axios
-        .get(`${api.url}/books`)
+      getBooksList()
         .then((res) => {
           this.data = res.data;
           this.dataLength = res.data.length;
@@ -230,8 +218,7 @@ export default {
 
     deleteItemConfirm() {
       // console.log(this.data[this.editedIndex].id);
-      this.axios
-        .delete(`${api.url}/admin/books/${this.data[this.editedIndex].id}`)
+      deleteBook({bookId : this.data[this.editedIndex].id})
         .then(() => {
           alert("삭제되었습니다.");
 
@@ -267,12 +254,7 @@ export default {
       if (this.editedIndex > -1) {
         // Object.assign(this.data[this.editedIndex], this.editedItem)
         console.log(this.data[this.editedIndex].id);
-        this.axios
-          .put(`${api.url}/admin/books/${this.data[this.editedIndex].id}`, {
-            title: this.editedItem.title,
-            publisher: this.editedItem.publisher,
-            author: this.editedItem.author,
-          })
+        modifyBook({bookId:this.data[this.editedIndex].id, data:{title: this.editedItem.title, publisher: this.editedItem.publisher, author: this.editedItem.author}})
           .then(() => {
             alert("수정되었습니다.");
             this.initialize();
@@ -282,12 +264,7 @@ export default {
             console.log(res);
           });
       } else {
-        this.axios
-          .post(`${api.url}/admin/books`, {
-            title: this.editedItem.title,
-            publisher: this.editedItem.publisher,
-            author: this.editedItem.author,
-          })
+        addNewBooks({data:{ title: this.editedItem.title, publisher: this.editedItem.publisher, author: this.editedItem.author,}})
           .then(() => {
             alert("등록되었습니다.");
             this.initialize();
