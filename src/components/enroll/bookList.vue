@@ -138,12 +138,8 @@ export default {
   data: () => ({
     dialog: false,
     dialogDelete: false,
-    sendID: "",
-    sendPublisher: "",
-    sendAuthor: "",
-    sendTitle: "",
     search: "",
-    dataLength: null,
+    dataLength: 0,
     headers: [
       { text: "title", value: "title", align: "center", sortable: true},
       { text: "publisher", value: "publisher", align: "center" },
@@ -154,7 +150,6 @@ export default {
     ],
     data: [],
     tableData:[],
-    tableDataObject:{},
     reservationCount:0,
     stockCount:0,
     editedIndex: -1,
@@ -187,15 +182,6 @@ export default {
   created() {
     this.initialize();
   },
-  // mounted() {
-  //   for(let i=0; i<this.dataLength; i++)
-  //   {
-  //           this.reservationCount = this.data[i].reservationCountA + this.data[i].reservationCountB + this.data[i].reservationCountC;
-  //           this.stockCount = this.data[i].stockCountA + this.data[i].stockCountB + this.data[i].stockCountC;
-  //           this.tableData.push({ title:this.data[i].title, publisher:this.data[i].publisher, author:this.data[i].author, stocks:this.stockCount, reservations: this.reservationCount });
-  //           console.log("완료")
-  //         }
-  // },
   methods: {
     link(row) {
       if (!this.dialog && !this.dialogDelete) {
@@ -221,7 +207,8 @@ export default {
             {
               this.reservationCount = this.data[i].reservationCountA + this.data[i].reservationCountB + this.data[i].reservationCountC;
               this.stockCount = this.data[i].stockCountA + this.data[i].stockCountB + this.data[i].stockCountC;
-              this.tableData.push({ title:this.data[i].title, publisher:this.data[i].publisher, author:this.data[i].author, stockCount:this.stockCount, reservationCount: this.reservationCount });
+              this.tableData.push({ title:this.data[i].title, publisher:this.data[i].publisher, author:this.data[i].author,
+              stockCount:this.stockCount, reservationCount: this.reservationCount });
               console.log(`${i}완료`);
             }
         })
