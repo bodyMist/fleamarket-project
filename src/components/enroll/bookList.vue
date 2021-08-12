@@ -4,7 +4,7 @@
       <v-col class="bookTableCover">
         <v-data-table
           :headers="headers"
-          :items="data"
+          :items="tableData"
           :search="search"
           class="elevation-1 bookTable"
           mobile-breakpoint="0"
@@ -118,7 +118,7 @@
             <v-icon small class="mr-2" @click="editItem(item)">
               mdi-pencil
             </v-icon>
-            <v-icon small @click="deleteItem(item)"> mdi-delete </v-icon>
+            <v-icon small @click.stop="deleteItem(item)"> mdi-delete </v-icon>
           </template>
           <template v-slot:no-data>
             <div v-if="dataLength === null">
@@ -134,7 +134,6 @@
 
 <script>
 import { getBooksList, deleteBook, addNewBooks, modifyBook } from "../../api/api";
-
 export default {
   data: () => ({
     dialog: false,
@@ -177,7 +176,6 @@ export default {
       return this.editedIndex === -1 ? "New Book" : "Edit Book";
     },
   },
-
   watch: {
     dialog(val) {
       val || this.close();
@@ -186,7 +184,6 @@ export default {
       val || this.closeDelete();
     },
   },
-
   created() {
     this.initialize();
   },
@@ -199,7 +196,6 @@ export default {
   //           console.log("완료")
   //         }
   // },
-
   methods: {
     link(row) {
       if (!this.dialog && !this.dialogDelete) {
@@ -214,50 +210,50 @@ export default {
         });
       }
     },
-
     initialize() {
       getBooksList()
         .then((res) => {
+          this.tableData = [];
           this.data = res.data;
           this.dataLength = res.data.length;
           console.log(res.data);
+           for(let i=0; i<this.dataLength; i++)
+            {
+              this.reservationCount = this.data[i].reservationCountA + this.data[i].reservationCountB + this.data[i].reservationCountC;
+              this.stockCount = this.data[i].stockCountA + this.data[i].stockCountB + this.data[i].stockCountC;
+              this.tableData.push({ title:this.data[i].title, publisher:this.data[i].publisher, author:this.data[i].author, stockCount:this.stockCount, reservationCount: this.reservationCount });
+              console.log(`${i}완료`);
+            }
         })
         .catch((err) => {
           alert("조회 실패");
           console.log(err);
         });
     },
-
     editItem(item) {
-      this.editedIndex = this.data.indexOf(item);
+      this.editedIndex = this.tableData.indexOf(item);
       console.log(item);
       this.editedItem = Object.assign({}, item);
       this.dialog = true;
     },
-
     deleteItem(item) {
-      this.editedIndex = this.data.indexOf(item);
+      this.editedIndex = this.tableData.indexOf(item);
       this.editedItem = Object.assign({}, item);
       this.dialogDelete = true;
     },
-
     deleteItemConfirm() {
       // console.log(this.data[this.editedIndex].id);
       deleteBook({bookId : this.data[this.editedIndex].id})
         .then(() => {
           alert("삭제되었습니다.");
-
-          this.data.splice(this.editedIndex, 1);
           this.initialize();
         })
         .catch((res) => {
           console.log(res);
           alert("삭제 실패");
         });
-
       this.closeDelete();
     },
-
     close() {
       this.dialog = false;
       // 모든 데이터와 DOM이 업데이트 된 이후에 실행하기 위해 nextTick()콜백함수 사용
@@ -267,7 +263,6 @@ export default {
         this.editedIndex = -1;
       });
     },
-
     closeDelete() {
       this.dialogDelete = false;
       // 모든 데이터와 UI, DOM이 업데이트 된 이후에 실행하기 위해 nextTick()콜백함수 사용
@@ -277,7 +272,6 @@ export default {
         this.editedIndex = -1;
       });
     },
-
     save() {
       if (this.editedIndex > -1) {
         // Object.assign(this.data[this.editedIndex], this.editedItem)
@@ -336,5 +330,4 @@ tbody > tr {
   width:100%;
   height:100%;
 }
-
 </style>
