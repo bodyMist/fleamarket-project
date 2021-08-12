@@ -125,23 +125,6 @@
         </v-data-table>
       </v-card>
     </v-col>
-    <template>
-      <!-- 스낵바 -->
-      <v-snackbar class="snackbar" v-model="snackbar" :timeout="timeout" bottom>
-        {{ this.text }}
-
-        <template v-slot:action="{ attrs }">
-          <v-btn
-            color="blue"
-            text
-            v-bind="attrs"
-            @click="this.snackbar = false"
-          >
-            닫기
-          </v-btn>
-        </template>
-      </v-snackbar>
-    </template>
   </v-row>
 </template>
 
@@ -150,7 +133,6 @@ import api from "@/key";
 export default {
   data() {
     return {
-      timeout: 1000,
       snackbar: false,
       text: "",
       dialogModiUser: false,
@@ -179,12 +161,14 @@ export default {
         studentId: "",
         day: "",
         time: "",
+        state: "",
       },
       defaultUserItem: {
         name: "",
         studentId: "",
         day: "",
         time: "",
+        state: "",
       },
 
       userHeaders: [
@@ -193,6 +177,7 @@ export default {
           align: "start",
           sortable: true,
           value: "isCancel",
+          state: "",
         },
 
         {
@@ -200,6 +185,7 @@ export default {
           value: "name",
         },
         { text: "학번", value: "studentId" },
+        { text: "상태", value: "state" },
         { text: "날짜", value: "date" },
         { text: "시간", value: "time" },
         { text: "예약여부", value: "isSold" },
@@ -234,10 +220,16 @@ export default {
       } else return "green";
     },
 
-    //스낵바(알림)
-    snackbarControll(inputText) {
+    //스낵바
+    //스낵바 상태를 상위 컴포넌트로 전달.
+    setSnackbar(inputText) {
       this.snackbar = true;
       this.text = inputText;
+      const obj = {
+        snackbar: this.snackbar,
+        text: this.text,
+      };
+      this.$emit("snackbarControll", obj);
     },
 
     // 사용자 예약 새고로침
@@ -256,6 +248,7 @@ export default {
       await this.axios
         .get(`${api.url}/books/${this.bookId}/reservations`)
         .then((res) => {
+          // console.log(res);
           this.totalUserNum = res.data.length;
           this.curUserNum = 0;
           this.cancelUserNum = 0;
@@ -298,12 +291,12 @@ export default {
           };
           this.setRsvData(Rsvobj);
           if (this.isRefresh) {
-            this.snackbarControll("예약 목록 새로고침 완료");
+            this.setSnackbar("예약 목록 새로고침 완료");
             this.isRefresh = !this.isRefresh;
           }
         })
         .catch((err) => {
-          this.snackbarControll("예약 목록 조회 실패");
+          this.setSnackbar("예약 목록 조회 실패");
           console.log(err);
         });
     },
@@ -341,7 +334,7 @@ export default {
     },
 
     async modiUsersList(item) {
-      let body = {
+      const body = {
         isSold: item.isSold,
       };
       if (body.isSold === "거래 완료") {
@@ -353,11 +346,14 @@ export default {
       await this.axios
         .put(`${api.url}/admin/reservations/${item.id}`, body)
         .then(() => {
-          this.getUserList();
-          this.snackbarControll("예약을 수정하였습니다.");
+          // 바로 변경이 안되는 버그가 있어서 1초 대기
+          setTimeout(() => {
+            this.getUserList();
+          }, 1000);
+          this.setSnackbar("예약을 수정하였습니다.");
         })
         .catch((err) => {
-          this.snackbarControll("예약 수정 실패");
+          this.setSnackbar("예약 수정 실패");
           this.getUserList();
           console.log(err);
         });
@@ -376,12 +372,13 @@ export default {
         .delete(`${api.url}/admin/books/${this.bookId}/reservations/${item.id}`)
         .then(() => {
           this.getUserList();
-          this.snackbarControll("예약을 취소 하였습니다.");
+          this.setSnackbar("예약을 취소 하였습니다.");
         })
         .catch((err) => {
-          this.snackbarControll("예약 수정 실패");
+          this.setSnackbar("예약 수정 실패");
           this.getUserList();
           console.log(err);
+          console.log(err.status);
         });
     },
   },

@@ -92,7 +92,7 @@
                         </v-col>
 
                         <v-col cols="12" sm="6" md="6">
-                          <v-select
+                          <!-- <v-select
                             v-if="formTitle === '추가'"
                             disabled
                             :items="selectIsSold"
@@ -100,15 +100,19 @@
                             item
                             label="판매 중"
                             v-model="editedBookItem.isSold"
-                          >
-                          </v-select>
+                          />
+
                           <v-select
                             v-else
                             :items="selectIsSold"
                             label="판매여부"
                             v-model="editedBookItem.isSold"
-                          >
-                          </v-select>
+                          /> -->
+                          <v-select
+                            :items="selectIsSold"
+                            label="판매여부"
+                            v-model="editedBookItem.isSold"
+                          />
                         </v-col>
                       </v-row>
                     </v-container>
@@ -169,17 +173,13 @@
         </v-data-table>
       </v-card>
     </v-col>
-    <Snackbar :snackbar="snackbar" :text="text" />
   </v-row>
 </template>
 
 <script>
 import api from "@/key";
-import Snackbar from "../ShowDetail/Snackbar.vue";
 export default {
-  components: {
-    Snackbar,
-  },
+  components: {},
   props: {
     bookId: String,
   },
@@ -234,6 +234,10 @@ export default {
         { text: "판매여부", value: "isSold" },
         { text: "Actions", value: "actions", sortable: false },
       ],
+
+      // 데이터 수정 관련 변수
+      isDeleted: false,
+      tempBook: [],
     };
   },
   methods: {
@@ -241,10 +245,11 @@ export default {
     //초기화 함수(재고, 예약)
     //현재 등록되어 있는 책의 수(totalUserNum), 책 정보를 가져와서 재고 테이블에 초기화.
     async getBookList() {
-      //상위 컴포넌트로부터 props를 받던 get방식으로 받던 책의 id값을 받아와서 해당 api에 던져줘야 함.
+      // 상위 컴포넌트로부터 props를 받던 get방식으로 받던 책의 id값을 받아와서 해당 api에 던져줘야 함.
       await this.axios
         .get(`${api.url}/books/${this.bookId}/stocks`)
         .then((res) => {
+          console.log(res);
           this.curBookNum = 0;
           res.data.map((value) => {
             if (!value.isSold) {
@@ -268,19 +273,35 @@ export default {
           this.snackbarControll("재고 목록 조회 실패");
           console.log(err);
         });
+
+      // this.axios
+      //   .get(`${api.url}/books/${this.bookId}`)
+      //   .then((res) => {
+      //     console.log(res);
+      //   })
+      //   .catch((err) => {
+      //     this.snackbarControll("재고 목록 조회 실패");
+      //     console.log(err);
+      //   });
     },
 
     setBookData(obj) {
       this.$emit("getBookData", obj);
     },
 
-    //스낵바(알림)
-    snackbarControll(inputText) {
+    //스낵바
+    //스낵바 상태를 상위 컴포넌트로 전달.
+    setSnackbar(inputText) {
       this.snackbar = true;
       this.text = inputText;
+      const obj = {
+        snackbar: this.snackbar,
+        text: this.text,
+      };
+      this.$emit("snackbarControll", obj);
     },
     //재고 추가
-    addBooksList(item) {
+    async addBooksList(item, msg1, msg2) {
       let body = {
         name: item.name,
         studentId: item.studentId,
@@ -295,15 +316,14 @@ export default {
         body.isSold = false;
       }
 
-      this.axios
+      await this.axios
         .post(`${api.url}/admin/books/${this.bookId}/Stocks`, body)
         .then(() => {
           this.getBookList();
-          this.snackbarControll("재고를 추가하였습니다.");
+          this.setSnackbar(msg1);
         })
-
         .catch((err) => {
-          this.snackbarControll("재고 추가 실패");
+          this.setSnackbar(msg2);
           this.getBookList();
           console.log(err);
         });
@@ -319,10 +339,12 @@ export default {
       this.editedBookIndex = this.books.indexOf(item);
       this.editedBookItem = Object.assign({}, item);
       this.dialogBook = true;
+      this.tempBook = Object.assign({}, this.editedBookItem);
     },
 
     //삭제 아이콘을 누르자 마자 수행
     deleteBookItem(item) {
+      console.log(item);
       // 해당 재고 아이디값 설정
       this.delBookId = item.id;
 
@@ -334,7 +356,7 @@ export default {
     //삭제 확인을 누르면 수행
     deleteBookItemConfirm() {
       //백엔드 삭제 요청
-      this.delBooks();
+      this.delBooks(this.editedBookItem);
 
       this.books.splice(this.editedBookIndex, 1);
       this.closeBookDelete();
@@ -359,66 +381,124 @@ export default {
       });
     },
 
-    //신규 데이터 생성, 기존 데이터 변경 시 save 를 누르면 수행
-    saveBook() {
+    //신규 데이터 생성, 기존 데이터 변경 시 모달창의 저장버튼을 누르면 수행
+    async saveBook() {
+      console.log("시발");
       //수정하는경우
       if (this.editedBookIndex > -1) {
-        Object.assign(this.books[this.editedBookIndex], this.editedBookItem);
+        //삭제 하고 추가 되는 기능으로 변경되어야 함.
+        // 기존 방식 사용 불가
+        // Object.assign(this.books[this.editedBookIndex], this.editedBookItem);
+        // this.modiBooksList(this.books[this.editedBookIndex]);
 
-        this.modiBooksList(this.books[this.editedBookIndex]);
+        // 1. 기존 아이템 삭제 절차
+        this.delBookId = this.tempBook.id;
+
+        this.editedBookIndex = this.books.indexOf(this.tempBook);
+        this.tempBook = Object.assign({}, this.tempBook);
+
+        //서버에 삭제 요청
+        const delBody = {
+          data: {
+            state: this.tempBook.state,
+          },
+        };
+        await this.axios
+          .delete(
+            `${api.url}/admin/books/${this.bookId}/stocks/${this.delBookId}`,
+            delBody
+          )
+          .then(() => {
+            this.books.splice(this.editedBookIndex, 1);
+            this.$nextTick(() => {
+              this.tempBook = Object.assign({}, this.tempBook);
+              this.editedBookIndex = -1;
+              this.isDeleted = true;
+            });
+
+            this.addBooksList(
+              this.editedBookItem,
+              "재고를 수정하였습니다.",
+              "재고 수정 실패"
+            );
+          })
+          .catch((err) => {
+            this.setSnackbar("재고 수정 실패");
+            this.getBookList();
+            console.log(err);
+          });
       }
+
       //추가하는 경우
       else {
         this.books.push(this.editedBookItem);
 
         //재고추가 post
         const curIndex = this.books.indexOf(this.editedBookItem);
-        this.addBooksList(this.books[curIndex]);
+        this.addBooksList(
+          this.books[curIndex],
+          "재고를 추가하였습니다.",
+          "재고 추가 실패"
+        );
       }
       this.closeBook();
     },
 
-    //재고 수정
+    // 기존 재고 수정
+    // 삭제후, 변경 데이터로 재 등록하는 방식으로 해야함.
     modiBooksList(item) {
-      let body = {
-        name: item.name,
-        studentId: item.studentId,
-        price: item.price,
-        state: item.state,
-        isSold: item.isSold,
-      };
-
-      if (body.isSold === "판매 완료") {
-        body.isSold = true;
-      } else {
-        body.isSold = false;
-      }
-      this.axios
-        .put(`${api.url}/admin/stocks/${item.id}`, body)
-        .then(() => {
-          // this.snackbar = true;
-          this.getBookList();
-          this.snackbarControll("재고를 수정하였습니다.");
-        })
-        .catch((err) => {
-          this.snackbarControll("재고 수정 실패");
-          this.getBookList();
-          console.log(err);
-        });
+      console.log(item);
+      // let body = {
+      //   name: item.name,
+      //   studentId: item.studentId,
+      //   price: item.price,
+      //   state: item.state,
+      //   isSold: item.isSold,
+      // };
+      // if (body.isSold === "판매 완료") {
+      //   body.isSold = true;
+      // } else {
+      //   body.isSold = false;
+      // }
+      // 기존 수정 api
+      // 백엔드 내부 구조상 재고 변경이 불가능 하기 때문에 해당 api 사용 불가
+      // this.axios
+      //   .put(`${api.url}/admin/stocks/${item.id}`, body)
+      //   .then(() => {
+      //     // this.snackbar = true;
+      //     setTimeout(() => {
+      //       this.getBookList();
+      //     }, 1000);
+      //     this.setSnackbar("재고를 수정하였습니다.");
+      //   })
+      //   .catch((err) => {
+      //     this.setSnackbar("재고 수정 실패");
+      //     this.getBookList();
+      //     console.log(err);
+      //   });
     },
 
     //재고 삭제
-    delBooks() {
+    delBooks(item) {
+      const body = {
+        data: {
+          state: item.state,
+        },
+      };
+
       this.axios
         .delete(
-          `${api.url}/admin/books/${this.bookId}/stocks/${this.delBookId}`
+          `${api.url}/admin/books/${this.bookId}/stocks/${this.delBookId}`,
+          body
         )
         .then(() => {
-          this.getBookList();
-          this.snackbarControll("재고를 삭제하였습니다.");
+          setTimeout(() => {
+            this.getBookList();
+          }, 1000);
+          this.setSnackbar("재고를 삭제하였습니다.");
         })
         .catch((err) => {
-          this.snackbarControll("재고 삭제 실패");
+          this.setSnackbar("재고 삭제 실패");
           this.getBookList();
           console.log(err);
         });

@@ -16,7 +16,6 @@
         :bookPublisher="this.$route.params.publisher"
       />
     </v-row>
-
     <!-- 거래 현황 -->
     <v-row>
       <!-- 재고 현황 -->
@@ -30,12 +29,30 @@
         :curUserNum="this.curUserNum"
       />
     </v-row>
-
     <!-- 등록되어 있는 책 목록 -->
-    <BookList :bookId="this.$route.params.id" @getBookData="getBookData" />
+    <BookList
+      :bookId="this.$route.params.id"
+      @getBookData="getBookData"
+      @snackbarControll="snackbarControll"
+    />
 
     <!-- 예약자 명단 -->
-    <RsvList :bookId="this.$route.params.id" @getRsvData="getRsvData" />
+    <RsvList
+      :bookId="this.$route.params.id"
+      @getRsvData="getRsvData"
+      @snackbarControll="snackbarControll"
+    />
+
+    <!-- 스낵바 -->
+    <v-snackbar class="snackbar" v-model="snackbar" :timeout="timeout" bottom>
+      {{ this.text }}
+
+      <template v-slot:action="{ attrs }">
+        <v-btn color="blue" text v-bind="attrs" @click="snackbar = false">
+          닫기
+        </v-btn>
+      </template>
+    </v-snackbar>
   </v-container>
 </template>
 
@@ -77,6 +94,12 @@ export default {
       curBookNum: 0,
 
       bookId: "",
+
+      snackbar: false,
+
+      text: "",
+
+      timeout: 1000,
     };
   },
 
@@ -103,6 +126,12 @@ export default {
     getBookData(data) {
       this.totalBookNum = data.totalBookNum;
       this.curBookNum = data.curBookNum;
+    },
+
+    //스낵바(알림)
+    snackbarControll(obj) {
+      this.text = obj.text;
+      this.snackbar = obj.snackbar;
     },
   },
 };
