@@ -11,13 +11,13 @@
           @click:row="link"
         >
           <template v-slot:top>
-            <v-toolbar flat>
+            <v-toolbar flat class='toolbar'>
               <v-container>
                 <v-row>
-                  <v-col cols="3">
+                  <v-col cols="3" class='table-title-col'>
                     <v-toolbar-title> 목록 </v-toolbar-title>
                   </v-col>
-                  <v-col>
+                  <v-col cols='7' class='search-field-col'>
                     <v-text-field
                       v-model="search"
                       append-icon="mdi-magnify"
@@ -26,24 +26,25 @@
                       hide-details
                     ></v-text-field>
                   </v-col>
-                </v-row>
-              </v-container>
-              <v-spacer></v-spacer>
-              <!-- <v-divider class="mx-4" inset vertical></v-divider> -->
-              <!-- <v-divider class="mx-4" inset vertical></v-divider> -->
-              <v-spacer></v-spacer>
+                
+
+              <!-- <v-spacer></v-spacer>
+              <v-spacer></v-spacer> -->
+              <v-col class='addBtn-col'>
               <v-dialog persistent v-model="dialog" max-width="500px">
                 <template v-slot:activator="{ on, attrs }">
                   <v-btn
                     color="primary"
                     dark
-                    class="mb-2"
+                    class='mb-2 addBtn'
                     v-bind="attrs"
                     v-on="on"
                   >
                     추가하기
                   </v-btn>
                 </template>
+
+                <!-- 추가하기 v-dialog 출력부분 -->
                 <v-card>
                   <v-card-title>
                     <span class="headline">{{ formTitle }}</span>
@@ -84,7 +85,14 @@
                     </v-btn>
                   </v-card-actions>
                 </v-card>
+                <!-- 추가하기 v-dialog 출력부분 -->
+
               </v-dialog>
+              </v-col>
+              </v-row>
+              </v-container>
+              
+              <!-- 삭제버튼(쓰레기통 아이콘) 클릭 시 출력되는 다이얼로그 -->
               <v-dialog persistent v-model="dialogDelete" max-width="500px">
                 <v-card style="text-align: center">
                   <v-card-title class="headline"
@@ -102,8 +110,10 @@
                   </v-card-actions>
                 </v-card>
               </v-dialog>
-            </v-toolbar>
+              </v-toolbar>
           </template>
+               <!-- 삭제버튼(쓰레기통 아이콘) 클릭 시 출력되는 다이얼로그 -->
+            
           <template v-slot:item.actions="{ item }">
             <v-icon small class="mr-2" @click="editItem(item)">
               mdi-pencil
@@ -136,7 +146,7 @@ export default {
     search: "",
     dataLength: null,
     headers: [
-      { text: "title", align: "center", sortable: true, value: "title"},
+      { text: "title", value: "title", align: "center", sortable: true},
       { text: "publisher", value: "publisher", align: "center" },
       { text: "author", value: "author", align: "center" },
       { text: "stocks", value: "stockCount", sortable: false, align: "center" },
@@ -144,6 +154,10 @@ export default {
       { text: "Actions", value: "actions", sortable: false, align: "center" },
     ],
     data: [],
+    tableData:[],
+    tableDataObject:{},
+    reservationCount:0,
+    stockCount:0,
     editedIndex: -1,
     editedItem: {
       title: "",
@@ -176,6 +190,15 @@ export default {
   created() {
     this.initialize();
   },
+  // mounted() {
+  //   for(let i=0; i<this.dataLength; i++)
+  //   {
+  //           this.reservationCount = this.data[i].reservationCountA + this.data[i].reservationCountB + this.data[i].reservationCountC;
+  //           this.stockCount = this.data[i].stockCountA + this.data[i].stockCountB + this.data[i].stockCountC;
+  //           this.tableData.push({ title:this.data[i].title, publisher:this.data[i].publisher, author:this.data[i].author, stocks:this.stockCount, reservations: this.reservationCount });
+  //           console.log("완료")
+  //         }
+  // },
 
   methods: {
     link(row) {
@@ -197,6 +220,7 @@ export default {
         .then((res) => {
           this.data = res.data;
           this.dataLength = res.data.length;
+          console.log(res.data);
         })
         .catch((err) => {
           alert("조회 실패");
@@ -206,6 +230,7 @@ export default {
 
     editItem(item) {
       this.editedIndex = this.data.indexOf(item);
+      console.log(item);
       this.editedItem = Object.assign({}, item);
       this.dialog = true;
     },
@@ -235,7 +260,8 @@ export default {
 
     close() {
       this.dialog = false;
-      // console.log('close()');
+      // 모든 데이터와 DOM이 업데이트 된 이후에 실행하기 위해 nextTick()콜백함수 사용
+      // 자바스크립트의 비동기 처리에 의한 에러를 방지하기 위해
       this.$nextTick(() => {
         this.editedItem = Object.assign({}, this.defaultItem);
         this.editedIndex = -1;
@@ -244,6 +270,8 @@ export default {
 
     closeDelete() {
       this.dialogDelete = false;
+      // 모든 데이터와 UI, DOM이 업데이트 된 이후에 실행하기 위해 nextTick()콜백함수 사용
+      // 자바스크립트의 비동기 처리에 의한 에러를 방지하기 위해
       this.$nextTick(() => {
         this.editedItem = Object.assign({}, this.defaultItem);
         this.editedIndex = -1;
@@ -284,4 +312,29 @@ export default {
 tbody > tr {
   cursor: pointer;
 }
+.bookTableCover {
+  overflow:hidden;
+}
+.table-title-col {
+  display:flex;
+  align-items: center;
+}
+.v-toolbar__title {
+  height:60%;
+}
+.search-field-col {
+  display:flex;
+  justify-content: center;
+  align-items: center;
+}
+.addBtn-col {
+  display:flex;
+  justify-content: center;
+  align-items: center;
+}
+.addBtn {
+  width:100%;
+  height:100%;
+}
+
 </style>
