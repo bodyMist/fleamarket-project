@@ -202,14 +202,12 @@ export default {
           this.tableData = [];
           this.data = res.data;
           this.dataLength = res.data.length;
-          console.log(res.data);
            for(let i=0; i<this.dataLength; i++)
             {
               this.reservationCount = this.data[i].reservationCountA + this.data[i].reservationCountB + this.data[i].reservationCountC;
               this.stockCount = this.data[i].stockCountA + this.data[i].stockCountB + this.data[i].stockCountC;
               this.tableData.push({ title:this.data[i].title, publisher:this.data[i].publisher, author:this.data[i].author,
               stockCount:this.stockCount, reservationCount: this.reservationCount });
-              console.log(`${i}완료`);
             }
         })
         .catch((err) => {
@@ -268,9 +266,9 @@ export default {
             alert("수정되었습니다.");
             this.initialize();
           })
-          .catch((res) => {
+          .catch((err) => {
             alert("수정 실패");
-            console.log(res);
+            console.log(err);
           });
       } else {
         addNewBooks({data:{ title: this.editedItem.title, publisher: this.editedItem.publisher, author: this.editedItem.author,}})
