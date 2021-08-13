@@ -92,7 +92,7 @@
                         </v-col>
 
                         <v-col cols="12" sm="6" md="6">
-                          <!-- <v-select
+                          <v-select
                             v-if="formTitle === '추가'"
                             disabled
                             :items="selectIsSold"
@@ -107,12 +107,12 @@
                             :items="selectIsSold"
                             label="판매여부"
                             v-model="editedBookItem.isSold"
-                          /> -->
-                          <v-select
+                          />
+                          <!-- <v-select
                             :items="selectIsSold"
                             label="판매여부"
                             v-model="editedBookItem.isSold"
-                          />
+                          /> -->
                         </v-col>
                       </v-row>
                     </v-container>
@@ -177,10 +177,9 @@
 </template>
 
 <script>
-import api from "@/key";
 import {
   getBookListapi,
-  // addBookListapi,
+  addBookListapi,
   delBookListapi,
 } from "../../api/api.js";
 export default {
@@ -252,10 +251,7 @@ export default {
     getBookList() {
       // 상위 컴포넌트로부터 props를 받던 get방식으로 받던 책의 id값을 받아와서 해당 api에 던져줘야 함.
       getBookListapi(this.bookId)
-        // this.axios
-        //   .get(`${api.url}/books/${this.bookId}/stocks`)
         .then((res) => {
-          console.log(res);
           this.curBookNum = 0;
           res.data.map((value) => {
             if (!value.isSold) {
@@ -279,16 +275,6 @@ export default {
           this.snackbarControll("재고 목록 조회 실패");
           console.log(err);
         });
-
-      // this.axios
-      //   .get(`${api.url}/books/${this.bookId}`)
-      //   .then((res) => {
-      //     console.log(res);
-      //   })
-      //   .catch((err) => {
-      //     this.snackbarControll("재고 목록 조회 실패");
-      //     console.log(err);
-      //   });
     },
 
     setBookData(obj) {
@@ -307,8 +293,7 @@ export default {
       this.$emit("snackbarControll", obj);
     },
     //재고 추가
-    async addBooksList(item, msg1, msg2) {
-      console.log("뭔데");
+    addBooksList(item, msg1, msg2) {
       console.log(item);
       let body = {
         name: item.name,
@@ -324,9 +309,7 @@ export default {
         body.isSold = false;
       }
 
-      // addBookListapi(this.bookId, body)
-      await this.axios
-        .post(`${api.url}/admin/books/${this.bookId}/Stocks`, body)
+      addBookListapi(this.bookId, body)
         .then(() => {
           this.getBookList();
           this.setSnackbar(msg1);
@@ -393,7 +376,7 @@ export default {
     },
 
     //신규 데이터 생성, 기존 데이터 변경 시 모달창의 저장버튼을 누르면 수행
-    async saveBook() {
+    saveBook() {
       //수정하는경우
       if (this.editedBookIndex > -1) {
         //삭제 하고 추가 되는 기능으로 변경되어야 함.
@@ -417,11 +400,6 @@ export default {
         };
 
         delBookListapi(this.bookId, this.delBookId, delBody)
-          // await this.axios
-          //   .delete(
-          //     `${api.url}/admin/books/${this.bookId}/stocks/${this.delBookId}`,
-          //     delBody
-          //   )
           .then(() => {
             this.books.splice(this.editedBookIndex, 1);
             this.$nextTick(() => {
@@ -433,11 +411,11 @@ export default {
             this.addBooksList(
               changeBookData,
               "재고를 수정하였습니다.",
-              "재고 수정 실패1"
+              "재고 수정 실패"
             );
           })
           .catch((err) => {
-            this.setSnackbar("재고 수정 실패2");
+            this.setSnackbar("재고 수정 실패");
             this.getBookList();
             console.log(err);
           });
@@ -501,11 +479,6 @@ export default {
       };
 
       delBookListapi(this.bookId, this.delBookId, body)
-        // this.axios
-        //   .delete(
-        //     `${api.url}/admin/books/${this.bookId}/stocks/${this.delBookId}`,
-        //     body
-        //   )
         .then(() => {
           setTimeout(() => {
             this.getBookList();

@@ -129,7 +129,12 @@
 </template>
 
 <script>
-import api from "@/key";
+// import api from "@/key";
+import {
+  getUserListapi,
+  modiUsersListapi,
+  cancelUsersListapi,
+} from "../../api/api.js";
 export default {
   data() {
     return {
@@ -244,9 +249,10 @@ export default {
     },
 
     //현재 예약자 수(curUserNum), 예약자 총 명단을 가져와서 예약자 명단 테이블에 초기화.
-    async getUserList() {
-      await this.axios
-        .get(`${api.url}/books/${this.bookId}/reservations`)
+    getUserList() {
+      getUserListapi(this.bookId)
+        // await this.axios
+        //   .get(`${api.url}/books/${this.bookId}/reservations`)
         .then((res) => {
           // console.log(res);
           this.totalUserNum = res.data.length;
@@ -333,7 +339,7 @@ export default {
       this.closeUser();
     },
 
-    async modiUsersList(item) {
+    modiUsersList(item) {
       const body = {
         isSold: item.isSold,
       };
@@ -343,8 +349,9 @@ export default {
         body.isSold = false;
       }
 
-      await this.axios
-        .put(`${api.url}/admin/reservations/${item.id}`, body)
+      modiUsersListapi(item.id, body)
+        // await this.axios
+        //   .put(`${api.url}/admin/reservations/${item.id}`, body)
         .then(() => {
           // 바로 변경이 안되는 버그가 있어서 1초 대기
           setTimeout(() => {
@@ -367,9 +374,10 @@ export default {
       this.dialogCancelUser = true;
     },
 
-    async cancelUsersList(item) {
-      await this.axios
-        .delete(`${api.url}/admin/books/${this.bookId}/reservations/${item.id}`)
+    cancelUsersList(item) {
+      cancelUsersListapi(this.bookId, item.id)
+        // await this.axios
+        //   .delete(`${api.url}/admin/books/${this.bookId}/reservations/${item.id}`)
         .then(() => {
           this.getUserList();
           this.setSnackbar("예약을 취소 하였습니다.");

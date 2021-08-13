@@ -1,6 +1,7 @@
 import axios from "axios";
 import api from "../key";
 
+// enroll
 const getBooksList = () => {
   return axios.get(`${api.url}/books`);
 };
@@ -17,6 +18,7 @@ const modifyBook = ({ bookId, data }) => {
   return axios.put(`${api.url}/admin/books/${bookId}`, data);
 };
 
+// bookList
 const getBookListapi = async (bookId) => {
   return await axios.get(`${api.url}/books/${bookId}/stocks`);
 };
@@ -32,6 +34,21 @@ const delBookListapi = async (bookId, delBookId, body) => {
   );
 };
 
+// RsvList
+const getUserListapi = async (bookId) => {
+  return await axios.get(`${api.url}/books/${bookId}/reservations`);
+};
+
+const modiUsersListapi = async (id, body) => {
+  return await axios.put(`${api.url}/admin/reservations/${id}`, body);
+};
+
+const cancelUsersListapi = async (bookId, id) => {
+  return await axios.delete(
+    `${api.url}/admin/books/${bookId}/reservations/${id}`
+  );
+};
+
 export {
   getBooksList,
   deleteBook,
@@ -40,4 +57,7 @@ export {
   getBookListapi,
   addBookListapi,
   delBookListapi,
+  getUserListapi,
+  modiUsersListapi,
+  cancelUsersListapi,
 };
