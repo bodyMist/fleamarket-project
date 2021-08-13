@@ -1,8 +1,5 @@
 <template>
-    <div class = 'listContainer'>
-        <bookList />
-    </div>
-
+            <bookList />
 </template>
 
 <script>
@@ -25,11 +22,5 @@ export default {
 </script>
 
 <style scoped>
-    .listContainer {
-        padding-top:5%;
-        display:flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-    }
+
 </style>
