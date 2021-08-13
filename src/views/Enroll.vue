@@ -1,26 +1,19 @@
 <template>
-            <bookList />
+  <bookList />
 </template>
 
 <script>
-import bookList from '../components/enroll/bookList';
-
+import bookList from "../components/enroll/enrollBookList";
 
 export default {
-    components : {
-        bookList,
-    },
-    data() {
-        return{
-            
-        }
-    },
-    methods: {
-        
-    }
-}
+  components: {
+    bookList,
+  },
+  data() {
+    return {};
+  },
+  methods: {},
+};
 </script>
 
-<style scoped>
-
-</style>
+<style scoped></style>

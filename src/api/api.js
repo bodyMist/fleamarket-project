@@ -1,22 +1,43 @@
-import axios from 'axios';
-import key from '../key';
+import axios from "axios";
+import api from "../key";
 
-const getBooksList = ()=> {
-    return axios.get(`${key}/books`);
-}
+const getBooksList = () => {
+  return axios.get(`${api.url}/books`);
+};
 
-const deleteBook = ({bookId}) => {
-    return axios.delete(`${key}/admin/books/${bookId}`);
-}
+const deleteBook = ({ bookId }) => {
+  return axios.delete(`${api.url}/admin/books/${bookId}`);
+};
 
-const addNewBooks = ({data}) => {
-    return axios.post(`${key}/admin/books`, data);
-}
+const addNewBooks = ({ data }) => {
+  return axios.post(`${api.url}/admin/books`, data);
+};
 
-const modifyBook = ({bookId, data}) => {
-    return axios.put(`${key}/admin/books/${bookId}`, data);
-}
+const modifyBook = ({ bookId, data }) => {
+  return axios.put(`${api.url}/admin/books/${bookId}`, data);
+};
 
+const getBookListapi = async (bookId) => {
+  return await axios.get(`${api.url}/books/${bookId}/stocks`);
+};
 
+const addBookListapi = async (bookId, body) => {
+  return await axios.post(`${api.url}/admin/books/${bookId}/Stocks`, body);
+};
 
-export {getBooksList, deleteBook, addNewBooks, modifyBook};
+const delBookListapi = async (bookId, delBookId, body) => {
+  return await axios.delete(
+    `${api.url}/admin/books/${bookId}/stocks/${delBookId}`,
+    body
+  );
+};
+
+export {
+  getBooksList,
+  deleteBook,
+  addNewBooks,
+  modifyBook,
+  getBookListapi,
+  addBookListapi,
+  delBookListapi,
+};

@@ -11,13 +11,15 @@
           @click:row="link"
         >
           <template v-slot:top>
-            <v-toolbar flat class='toolbar'>
+            <v-toolbar flat class="toolbar">
               <v-container>
                 <v-row>
-                  <v-col cols="3" class='table-title-col'>
+                  <v-col cols="3" class="table-title-col">
                     <v-toolbar-title> 목록 </v-toolbar-title>
+                    <v-divider vertical class="ml-4 mr-4" />
+                    <v-toolbar-title>등록 수량 : {{ dataNum }}</v-toolbar-title>
                   </v-col>
-                  <v-col cols='7' class='search-field-col'>
+                  <v-col cols="7" class="search-field-col">
                     <v-text-field
                       v-model="search"
                       append-icon="mdi-magnify"
@@ -26,72 +28,70 @@
                       hide-details
                     ></v-text-field>
                   </v-col>
-                
 
-              <!-- <v-spacer></v-spacer>
+                  <!-- <v-spacer></v-spacer>
               <v-spacer></v-spacer> -->
-              <v-col class='addBtn-col'>
-              <v-dialog persistent v-model="dialog" max-width="500px">
-                <template v-slot:activator="{ on, attrs }">
-                  <v-btn
-                    color="primary"
-                    dark
-                    class='mb-2 addBtn'
-                    v-bind="attrs"
-                    v-on="on"
-                  >
-                    추가하기
-                  </v-btn>
-                </template>
+                  <v-col class="addBtn-col">
+                    <v-dialog persistent v-model="dialog" max-width="500px">
+                      <template v-slot:activator="{ on, attrs }">
+                        <v-btn
+                          color="primary"
+                          dark
+                          class="mb-2 addBtn"
+                          v-bind="attrs"
+                          v-on="on"
+                        >
+                          추가하기
+                        </v-btn>
+                      </template>
 
-                <!-- 추가하기 v-dialog 출력부분 -->
-                <v-card>
-                  <v-card-title>
-                    <span class="headline">{{ formTitle }}</span>
-                  </v-card-title>
+                      <!-- 추가하기 v-dialog 출력부분 -->
+                      <v-card>
+                        <v-card-title>
+                          <span class="headline">{{ formTitle }}</span>
+                        </v-card-title>
 
-                  <v-card-text>
-                    <v-container>
-                      <v-row>
-                        <v-col cols="12" sm="6" md="4">
-                          <v-text-field
-                            v-model="editedItem.title"
-                            label="title"
-                          ></v-text-field>
-                        </v-col>
-                        <v-col cols="12" sm="6" md="4">
-                          <v-text-field
-                            v-model="editedItem.publisher"
-                            label="publisher"
-                          ></v-text-field>
-                        </v-col>
-                        <v-col cols="12" sm="6" md="4">
-                          <v-text-field
-                            v-model="editedItem.author"
-                            label="author"
-                          ></v-text-field>
-                        </v-col>
-                      </v-row>
-                    </v-container>
-                  </v-card-text>
+                        <v-card-text>
+                          <v-container>
+                            <v-row>
+                              <v-col cols="12" sm="6" md="4">
+                                <v-text-field
+                                  v-model="editedItem.title"
+                                  label="title"
+                                ></v-text-field>
+                              </v-col>
+                              <v-col cols="12" sm="6" md="4">
+                                <v-text-field
+                                  v-model="editedItem.publisher"
+                                  label="publisher"
+                                ></v-text-field>
+                              </v-col>
+                              <v-col cols="12" sm="6" md="4">
+                                <v-text-field
+                                  v-model="editedItem.author"
+                                  label="author"
+                                ></v-text-field>
+                              </v-col>
+                            </v-row>
+                          </v-container>
+                        </v-card-text>
 
-                  <v-card-actions>
-                    <v-spacer></v-spacer>
-                    <v-btn color="blue darken-1" text @click="close">
-                      취소
-                    </v-btn>
-                    <v-btn color="blue darken-1" text @click="save">
-                      저장
-                    </v-btn>
-                  </v-card-actions>
-                </v-card>
-                <!-- 추가하기 v-dialog 출력부분 -->
-
-              </v-dialog>
-              </v-col>
-              </v-row>
+                        <v-card-actions>
+                          <v-spacer></v-spacer>
+                          <v-btn color="blue darken-1" text @click="close">
+                            취소
+                          </v-btn>
+                          <v-btn color="blue darken-1" text @click="save">
+                            저장
+                          </v-btn>
+                        </v-card-actions>
+                      </v-card>
+                      <!-- 추가하기 v-dialog 출력부분 -->
+                    </v-dialog>
+                  </v-col>
+                </v-row>
               </v-container>
-              
+
               <!-- 삭제버튼(쓰레기통 아이콘) 클릭 시 출력되는 다이얼로그 -->
               <v-dialog persistent v-model="dialogDelete" max-width="500px">
                 <v-card style="text-align: center">
@@ -110,10 +110,10 @@
                   </v-card-actions>
                 </v-card>
               </v-dialog>
-              </v-toolbar>
+            </v-toolbar>
           </template>
-               <!-- 삭제버튼(쓰레기통 아이콘) 클릭 시 출력되는 다이얼로그 -->
-            
+          <!-- 삭제버튼(쓰레기통 아이콘) 클릭 시 출력되는 다이얼로그 -->
+
           <template v-slot:item.actions="{ item }">
             <v-icon small class="mr-2" @click="editItem(item)">
               mdi-pencil
@@ -133,7 +133,12 @@
 </template>
 
 <script>
-import { getBooksList, deleteBook, addNewBooks, modifyBook } from "../../api/api";
+import {
+  getBooksList,
+  deleteBook,
+  addNewBooks,
+  modifyBook,
+} from "../../api/api";
 export default {
   data: () => ({
     dialog: false,
@@ -141,17 +146,23 @@ export default {
     search: "",
     dataLength: 0,
     headers: [
-      { text: "title", value: "title", align: "center", sortable: true},
+      { text: "title", value: "title", align: "center", sortable: true },
       { text: "publisher", value: "publisher", align: "center" },
       { text: "author", value: "author", align: "center" },
       { text: "stocks", value: "stockCount", sortable: false, align: "center" },
-      { text: "reservations", value: "reservationCount", sortable: false, align: "center"},
+      {
+        text: "reservations",
+        value: "reservationCount",
+        sortable: false,
+        align: "center",
+      },
       { text: "Actions", value: "actions", sortable: false, align: "center" },
     ],
     data: [],
-    tableData:[],
-    reservationCount:0,
-    stockCount:0,
+    dataNum: 0,
+    tableData: [],
+    reservationCount: 0,
+    stockCount: 0,
     editedIndex: -1,
     editedItem: {
       title: "",
@@ -199,20 +210,35 @@ export default {
     initialize() {
       getBooksList()
         .then((res) => {
+          console.log(res);
+          this.dataNum = res.data.length;
           this.tableData = [];
           this.data = res.data;
           this.dataLength = res.data.length;
-           for(let i=0; i<this.dataLength; i++)
-            {
-              this.reservationCount = this.data[i].reservationCountA + this.data[i].reservationCountB + this.data[i].reservationCountC;
-              this.stockCount = this.data[i].stockCountA + this.data[i].stockCountB + this.data[i].stockCountC;
-              this.tableData.push({ title:this.data[i].title, publisher:this.data[i].publisher, author:this.data[i].author,
-              stockCount:this.stockCount, reservationCount: this.reservationCount });
-            }
+          for (let i = 0; i < this.dataLength; i++) {
+            this.reservationCount =
+              this.data[i].reservationCountA +
+              this.data[i].reservationCountB +
+              this.data[i].reservationCountC;
+            this.stockCount =
+              this.data[i].stockCountA +
+              this.data[i].stockCountB +
+              this.data[i].stockCountC;
+            this.tableData.push({
+              id: this.data[i].id,
+              title: this.data[i].title,
+              publisher: this.data[i].publisher,
+              author: this.data[i].author,
+              stockCount: this.stockCount,
+              reservationCount: this.reservationCount,
+            });
+          }
         })
         .catch((err) => {
           alert("조회 실패");
           console.log(err);
+          console.log(err.response);
+          console.log(err.config);
         });
     },
     editItem(item) {
@@ -228,7 +254,7 @@ export default {
     },
     deleteItemConfirm() {
       // console.log(this.data[this.editedIndex].id);
-      deleteBook({bookId : this.data[this.editedIndex].id})
+      deleteBook({ bookId: this.data[this.editedIndex].id })
         .then(() => {
           alert("삭제되었습니다.");
           this.initialize();
@@ -261,7 +287,14 @@ export default {
       if (this.editedIndex > -1) {
         // Object.assign(this.data[this.editedIndex], this.editedItem)
         console.log(this.data[this.editedIndex].id);
-        modifyBook({bookId:this.data[this.editedIndex].id, data:{title: this.editedItem.title, publisher: this.editedItem.publisher, author: this.editedItem.author}})
+        modifyBook({
+          bookId: this.data[this.editedIndex].id,
+          data: {
+            title: this.editedItem.title,
+            publisher: this.editedItem.publisher,
+            author: this.editedItem.author,
+          },
+        })
           .then(() => {
             alert("수정되었습니다.");
             this.initialize();
@@ -271,7 +304,13 @@ export default {
             console.log(err);
           });
       } else {
-        addNewBooks({data:{ title: this.editedItem.title, publisher: this.editedItem.publisher, author: this.editedItem.author,}})
+        addNewBooks({
+          data: {
+            title: this.editedItem.title,
+            publisher: this.editedItem.publisher,
+            author: this.editedItem.author,
+          },
+        })
           .then(() => {
             alert("등록되었습니다.");
             this.initialize();
@@ -292,27 +331,27 @@ tbody > tr {
   cursor: pointer;
 }
 .bookTableCover {
-  overflow:hidden;
+  overflow: hidden;
 }
 .table-title-col {
-  display:flex;
+  display: flex;
   align-items: center;
 }
 .v-toolbar__title {
-  height:60%;
+  height: 60%;
 }
 .search-field-col {
-  display:flex;
+  display: flex;
   justify-content: center;
   align-items: center;
 }
 .addBtn-col {
-  display:flex;
+  display: flex;
   justify-content: center;
   align-items: center;
 }
 .addBtn {
-  width:100%;
-  height:100%;
+  width: 100%;
+  height: 100%;
 }
 </style>

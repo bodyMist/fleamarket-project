@@ -178,6 +178,11 @@
 
 <script>
 import api from "@/key";
+import {
+  getBookListapi,
+  // addBookListapi,
+  delBookListapi,
+} from "../../api/api.js";
 export default {
   components: {},
   props: {
@@ -244,10 +249,11 @@ export default {
     //재고 목록 조회
     //초기화 함수(재고, 예약)
     //현재 등록되어 있는 책의 수(totalUserNum), 책 정보를 가져와서 재고 테이블에 초기화.
-    async getBookList() {
+    getBookList() {
       // 상위 컴포넌트로부터 props를 받던 get방식으로 받던 책의 id값을 받아와서 해당 api에 던져줘야 함.
-      await this.axios
-        .get(`${api.url}/books/${this.bookId}/stocks`)
+      getBookListapi(this.bookId)
+        // this.axios
+        //   .get(`${api.url}/books/${this.bookId}/stocks`)
         .then((res) => {
           console.log(res);
           this.curBookNum = 0;
@@ -302,6 +308,8 @@ export default {
     },
     //재고 추가
     async addBooksList(item, msg1, msg2) {
+      console.log("뭔데");
+      console.log(item);
       let body = {
         name: item.name,
         studentId: item.studentId,
@@ -316,6 +324,7 @@ export default {
         body.isSold = false;
       }
 
+      // addBookListapi(this.bookId, body)
       await this.axios
         .post(`${api.url}/admin/books/${this.bookId}/Stocks`, body)
         .then(() => {
@@ -326,6 +335,8 @@ export default {
           this.setSnackbar(msg2);
           this.getBookList();
           console.log(err);
+          console.log(err.response);
+          console.log(err.config);
         });
     },
     // 상태별 색 부여
@@ -383,7 +394,6 @@ export default {
 
     //신규 데이터 생성, 기존 데이터 변경 시 모달창의 저장버튼을 누르면 수행
     async saveBook() {
-      console.log("시발");
       //수정하는경우
       if (this.editedBookIndex > -1) {
         //삭제 하고 추가 되는 기능으로 변경되어야 함.
@@ -397,17 +407,21 @@ export default {
         this.editedBookIndex = this.books.indexOf(this.tempBook);
         this.tempBook = Object.assign({}, this.tempBook);
 
+        const changeBookData = Object.assign({}, this.editedBookItem);
+
         //서버에 삭제 요청
         const delBody = {
           data: {
             state: this.tempBook.state,
           },
         };
-        await this.axios
-          .delete(
-            `${api.url}/admin/books/${this.bookId}/stocks/${this.delBookId}`,
-            delBody
-          )
+
+        delBookListapi(this.bookId, this.delBookId, delBody)
+          // await this.axios
+          //   .delete(
+          //     `${api.url}/admin/books/${this.bookId}/stocks/${this.delBookId}`,
+          //     delBody
+          //   )
           .then(() => {
             this.books.splice(this.editedBookIndex, 1);
             this.$nextTick(() => {
@@ -417,13 +431,13 @@ export default {
             });
 
             this.addBooksList(
-              this.editedBookItem,
+              changeBookData,
               "재고를 수정하였습니다.",
-              "재고 수정 실패"
+              "재고 수정 실패1"
             );
           })
           .catch((err) => {
-            this.setSnackbar("재고 수정 실패");
+            this.setSnackbar("재고 수정 실패2");
             this.getBookList();
             console.log(err);
           });
@@ -486,11 +500,12 @@ export default {
         },
       };
 
-      this.axios
-        .delete(
-          `${api.url}/admin/books/${this.bookId}/stocks/${this.delBookId}`,
-          body
-        )
+      delBookListapi(this.bookId, this.delBookId, body)
+        // this.axios
+        //   .delete(
+        //     `${api.url}/admin/books/${this.bookId}/stocks/${this.delBookId}`,
+        //     body
+        //   )
         .then(() => {
           setTimeout(() => {
             this.getBookList();
