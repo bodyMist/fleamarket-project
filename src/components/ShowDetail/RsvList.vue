@@ -251,10 +251,7 @@ export default {
     //현재 예약자 수(curUserNum), 예약자 총 명단을 가져와서 예약자 명단 테이블에 초기화.
     getUserList() {
       getUserListapi(this.bookId)
-        // await this.axios
-        //   .get(`${api.url}/books/${this.bookId}/reservations`)
         .then((res) => {
-          // console.log(res);
           this.totalUserNum = res.data.length;
           this.curUserNum = 0;
           this.cancelUserNum = 0;
@@ -350,10 +347,8 @@ export default {
       }
 
       modiUsersListapi(item.id, body)
-        // await this.axios
-        //   .put(`${api.url}/admin/reservations/${item.id}`, body)
         .then(() => {
-          // 바로 변경이 안되는 버그가 있어서 1초 대기
+          // 1초 대기
           setTimeout(() => {
             this.getUserList();
           }, 1000);
@@ -376,8 +371,6 @@ export default {
 
     cancelUsersList(item) {
       cancelUsersListapi(this.bookId, item.id)
-        // await this.axios
-        //   .delete(`${api.url}/admin/books/${this.bookId}/reservations/${item.id}`)
         .then(() => {
           this.getUserList();
           this.setSnackbar("예약을 취소 하였습니다.");

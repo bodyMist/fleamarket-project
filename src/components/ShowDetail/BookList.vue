@@ -294,7 +294,6 @@ export default {
     },
     //재고 추가
     addBooksList(item, msg1, msg2) {
-      console.log(item);
       let body = {
         name: item.name,
         studentId: item.studentId,
@@ -338,7 +337,6 @@ export default {
 
     //삭제 아이콘을 누르자 마자 수행
     deleteBookItem(item) {
-      console.log(item);
       // 해당 재고 아이디값 설정
       this.delBookId = item.id;
 
