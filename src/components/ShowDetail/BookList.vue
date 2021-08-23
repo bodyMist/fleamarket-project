@@ -383,6 +383,7 @@ export default {
         // this.modiBooksList(this.books[this.editedBookIndex]);
 
         // 1. 기존 아이템 삭제 절차
+        // 만약 기존 수정 api 활성화 되면 아래 코드는 주석처리.
         this.delBookId = this.tempBook.id;
 
         this.editedBookIndex = this.books.indexOf(this.tempBook);
@@ -476,7 +477,7 @@ export default {
         },
       };
 
-      delBookListapi(this.bookId, this.delBookId, body)
+      delBookListapi(this.delBookId, body)
         .then(() => {
           setTimeout(() => {
             this.getBookList();
@@ -487,6 +488,10 @@ export default {
           this.setSnackbar("재고 삭제 실패");
           this.getBookList();
           console.log(err);
+
+          // 에러 확인
+          // console.log(err.response);
+          // console.log(err.config);
         });
     },
   },

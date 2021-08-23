@@ -16,8 +16,6 @@
                 <v-row>
                   <v-col cols="3" class="table-title-col">
                     <v-toolbar-title> 목록 </v-toolbar-title>
-                    <v-divider vertical class="ml-4 mr-4" />
-                    <v-toolbar-title>등록 수량 : {{ dataNum }}</v-toolbar-title>
                   </v-col>
                   <v-col cols="7" class="search-field-col">
                     <v-text-field
@@ -28,9 +26,6 @@
                       hide-details
                     ></v-text-field>
                   </v-col>
-
-                  <!-- <v-spacer></v-spacer>
-              <v-spacer></v-spacer> -->
                   <v-col class="addBtn-col">
                     <v-dialog persistent v-model="dialog" max-width="500px">
                       <template v-slot:activator="{ on, attrs }">
@@ -144,7 +139,7 @@ export default {
     dialog: false,
     dialogDelete: false,
     search: "",
-    dataLength: 0,
+    dataLength: null,
     headers: [
       { text: "title", value: "title", align: "center", sortable: true },
       { text: "publisher", value: "publisher", align: "center" },
