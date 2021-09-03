@@ -477,7 +477,7 @@ export default {
         },
       };
 
-      delBookListapi(this.delBookId, body)
+      delBookListapi(this.bookId, this.delBookId, body)
         .then(() => {
           setTimeout(() => {
             this.getBookList();
@@ -491,7 +491,7 @@ export default {
 
           // 에러 확인
           // console.log(err.response);
-          // console.log(err.config);
+          console.log(err.config);
         });
     },
   },
