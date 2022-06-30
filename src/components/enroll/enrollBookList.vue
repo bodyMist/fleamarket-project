@@ -9,6 +9,13 @@
           class="elevation-1 bookTable"
           mobile-breakpoint="0"
           @click:row="link"
+          :footer-props="{
+            showFirstLastPage: true,
+            firstIcon: 'mdi-arrow-collapse-left',
+            lastIcon: 'mdi-arrow-collapse-right',
+            prevIcon: 'mdi-minus',
+            nextIcon: 'mdi-plus',
+          }"
         >
           <template v-slot:top>
             <v-toolbar flat class="toolbar">
@@ -109,7 +116,7 @@
           </template>
           <!-- 삭제버튼(쓰레기통 아이콘) 클릭 시 출력되는 다이얼로그 -->
 
-          <template v-slot:item.actions="{ item }">
+          <template v-slot:[`item.actions`]="{ item }">
             <v-icon small class="mr-2" @click="editItem(item)">
               mdi-pencil
             </v-icon>
