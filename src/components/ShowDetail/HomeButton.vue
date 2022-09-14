@@ -10,7 +10,7 @@ export default {
     //홈화면 이동
     moveHome() {
       this.$router.push({
-        name: "Manager",
+        name: "Enroll",
       });
     },
   },
